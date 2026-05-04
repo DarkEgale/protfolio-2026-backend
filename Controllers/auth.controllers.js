@@ -32,6 +32,7 @@ export const loginAdmin = async (req, res) => {
     }
 
     const token = signAuthToken(user);
+
     res.cookie(authCookieName, token, cookieOptions);
     await AccessToken.create({
       userId: user._id,
