@@ -61,7 +61,7 @@ export const requireAdminAuth = async (req, res, next) => {
         message: "Authentication session not found",
       });
     }
-
+    //send user
     req.user = user;
     next();
   } catch {
