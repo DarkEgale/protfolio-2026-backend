@@ -2,7 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import morgan from 'morgan';
 import cookieParser from 'cookie-parser';
-import rateLimit from 'express-rate-limit';
+import {rateLimit} from 'express-rate-limit';
 import adminroute from './Routes/adminroute.js';
 import Blog from './Models/Blog.model.js';
 import Project from './Models/Project.mode.js';
