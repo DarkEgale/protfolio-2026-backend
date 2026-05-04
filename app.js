@@ -2,7 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import morgan from 'morgan';
 import cookieParser from 'cookie-parser';
-import {rateLimit} from 'express-rate-limit';
+//import {rateLimit} from 'express-rate-limit';
 import adminroute from './Routes/adminroute.js';
 import Blog from './Models/Blog.model.js';
 import Project from './Models/Project.mode.js';
@@ -51,12 +51,12 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true
 }));
-app.use(rateLimit({
+/*app.use(rateLimit({
   windowMs: 15 * 60 * 1000,
   limit: 300,
   standardHeaders: true,
   legacyHeaders: false,
-}));
+}));*/
 app.use('/api/auth/login', rateLimit({
   windowMs: 15 * 60 * 1000,
   limit: 10,
