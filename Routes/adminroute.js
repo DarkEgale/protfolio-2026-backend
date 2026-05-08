@@ -6,14 +6,29 @@ import { getMe, loginAdmin, logoutAdmin } from "../Controllers/auth.controllers.
 import {
   getAdminChat,
   getClientChat,
+  getMyChat,
   listAdminChats,
   loginClientChat,
   sendAdminMessage,
   sendClientMessage,
   startChat,
+  updateAdminCallSignal,
+  updateClientCallSignal,
   updateChatStatus,
 } from "../Controllers/chat.controllers.js";
+import {
+  getClientMe,
+  getProjectHistory,
+  loginClientUser,
+  logoutClientUser,
+  recordProjectView,
+  registerClientUser,
+  resendClientVerificationEmail,
+  verifyClientEmail,
+} from "../Controllers/userAuth.controllers.js";
 import { requireAdminAuth } from "../MiddleWare/auth.js";
+import { requireClientAuth, requireVerifiedClient } from "../MiddleWare/clientAuth.js";
+import ChatFileUpload from "../MiddleWare/chatFileUpload.js";
 import CloudinaryUpload from "../MiddleWare/uploadCloudinary.js";
 
 const router = express.Router();
@@ -63,13 +78,25 @@ router.post("/auth/login", loginAdmin);
 router.get("/auth/me", requireAdminAuth, getMe);
 router.post("/auth/logout", requireAdminAuth, logoutAdmin);
 
-router.post("/chat/start", startChat);
+router.post("/user/register", registerClientUser);
+router.post("/user/login", loginClientUser);
+router.get("/user/me", requireClientAuth, getClientMe);
+router.post("/user/logout", requireClientAuth, logoutClientUser);
+router.post("/user/verify-email", requireClientAuth, verifyClientEmail);
+router.post("/user/resend-verification", requireClientAuth, resendClientVerificationEmail);
+router.get("/user/project-history", requireClientAuth, requireVerifiedClient, getProjectHistory);
+router.post("/user/project-history/:projectId", requireClientAuth, requireVerifiedClient, recordProjectView);
+
+router.post("/chat/start", requireClientAuth, requireVerifiedClient, ChatFileUpload.single("file"), startChat);
 router.post("/chat/login", loginClientChat);
-router.get("/chat/:id", getClientChat);
-router.post("/chat/:id/messages", sendClientMessage);
+router.get("/chat/me", requireClientAuth, requireVerifiedClient, getMyChat);
+router.get("/chat/:id", requireClientAuth, requireVerifiedClient, getClientChat);
+router.post("/chat/:id/messages", requireClientAuth, requireVerifiedClient, ChatFileUpload.single("file"), sendClientMessage);
+router.post("/chat/:id/call", requireClientAuth, requireVerifiedClient, updateClientCallSignal);
 router.get("/admin/chats", requireAdminAuth, listAdminChats);
 router.get("/admin/chats/:id", requireAdminAuth, getAdminChat);
-router.post("/admin/chats/:id/messages", requireAdminAuth, sendAdminMessage);
+router.post("/admin/chats/:id/messages", requireAdminAuth, ChatFileUpload.single("file"), sendAdminMessage);
+router.post("/admin/chats/:id/call", requireAdminAuth, updateAdminCallSignal);
 router.patch("/admin/chats/:id/status", requireAdminAuth, updateChatStatus);
 
 router.get("/site-content", getSiteContent);
