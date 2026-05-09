@@ -81,7 +81,7 @@ router.post("/auth/logout", requireAdminAuth, logoutAdmin);
 router.post("/user/register", registerClientUser);
 router.post("/user/login", loginClientUser);
 router.get("/user/me", requireClientAuth, getClientMe);
-router.post("/user/logout", logoutClientUser);
+router.post("/user/logout", requireClientAuth, logoutClientUser);
 router.post("/user/verify-email", requireClientAuth, verifyClientEmail);
 router.post("/user/resend-verification", requireClientAuth, resendClientVerificationEmail);
 router.get("/user/project-history", requireClientAuth, requireVerifiedClient, getProjectHistory);
