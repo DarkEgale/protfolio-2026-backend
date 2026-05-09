@@ -73,7 +73,6 @@ export const registerClientUser = async (req, res) => {
     }
 
     const user = await ClientUser.create({ name, email, password });
-    const verification = await sendAndStoreVerificationCode(user);
     res.cookie(clientAuthCookieName, signClientToken(user), clientCookieOptions);
 
     res.status(201).json({
@@ -86,6 +85,7 @@ export const registerClientUser = async (req, res) => {
       user: publicUser(user),
       ...(process.env.NODE_ENV !== "production" ? { devVerificationCode: verification.code } : {}),
     });
+    const verification = await sendAndStoreVerificationCode(user);
   } catch (error) {
     res.status(500).json({
       success: false,
