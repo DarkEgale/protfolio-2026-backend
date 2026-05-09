@@ -55,7 +55,7 @@ export const registerClientUser = async (req, res) => {
   try {
     const name = sanitizeString(req.body.name, 120);
     const email = sanitizeString(req.body.email, 254).toLowerCase();
-    const password = sanitizeString(req.body.password, 200);
+    const password = String(req.body.password || "");
 
     if (!name || !isEmail(email) || password.length < 6) {
       return res.status(400).json({
@@ -65,6 +65,7 @@ export const registerClientUser = async (req, res) => {
     }
 
     const existing = await ClientUser.findOne({ email });
+
     if (existing) {
       return res.status(409).json({
         success: false,
@@ -72,29 +73,42 @@ export const registerClientUser = async (req, res) => {
       });
     }
 
-    const user = await ClientUser.create({ name, email, password });
-    res.cookie(clientAuthCookieName, signClientToken(user), clientCookieOptions);
+    const user = await ClientUser.create({
+      name,
+      email,
+      password,
+    });
 
+    res.cookie(
+      clientAuthCookieName,
+      signClientToken(user),
+      clientCookieOptions
+    );
+
+    // Send response immediately
     res.status(201).json({
       success: true,
-      message: verification.emailSent
-        ? "Registration successful. Please verify your email."
-        : "Registration successful, but verification email could not be sent. Please check SMTP settings and resend the code.",
-      emailSent: verification.emailSent,
-      verificationEmailReceiver: verification.receiverEmail,
+      message: "Registration successful. Please verify your email.",
       user: publicUser(user),
-      ...(process.env.NODE_ENV !== "production" ? { devVerificationCode: verification.code } : {}),
     });
-    const verification = await sendAndStoreVerificationCode(user);
+
+    // Send verification email in background
+    sendAndStoreVerificationCode(user).catch((err) => {
+      console.error("Verification email failed:", err);
+    });
+
   } catch (error) {
+    console.error(error);
+
     res.status(500).json({
       success: false,
       message: "Registration failed",
-      error: error.message,
+      ...(process.env.NODE_ENV !== "production" && {
+        error: error.message,
+      }),
     });
   }
 };
-
 export const loginClientUser = async (req, res) => {
   try {
     const email = sanitizeString(req.body.email, 254).toLowerCase();
